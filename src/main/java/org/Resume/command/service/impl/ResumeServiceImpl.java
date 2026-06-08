@@ -3,6 +3,8 @@ package org.Resume.command.service.impl;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import org.Resume.command.command.CreateResumeCommand;
+import org.Resume.command.command.SetDefaultResumeCommand;
+import org.Resume.command.data.Resume;
 import org.Resume.command.data.ResumeRepository;
 import org.Resume.command.service.ResumeService;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -67,6 +69,27 @@ public class ResumeServiceImpl implements ResumeService {
                 .build();
 
         return commandGateway.send(command);
+    }
+
+    @Override
+    public CompletableFuture<Void> setDefaultResume(String candidateId, String resumeId) {
+        if (candidateId == null || candidateId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không xác định được người dùng từ token");
+        }
+
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV"));
+
+        if (!resume.getCandidateId().equals(candidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa CV này");
+        }
+
+        SetDefaultResumeCommand command = SetDefaultResumeCommand.builder()
+                .id(resumeId)
+                .candidateId(candidateId)
+                .build();
+
+        return commandGateway.send(command).thenApply(result -> null);
     }
 
     private void validateResumeFile(MultipartFile file) {

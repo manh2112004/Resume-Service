@@ -1,7 +1,9 @@
 package org.Resume.command.aggregate;
 
 import org.Resume.command.command.CreateResumeCommand;
+import org.Resume.command.command.SetDefaultResumeCommand;
 import org.Resume.command.event.ResumeCreatedEvent;
+import org.Resume.command.event.ResumeDefaultSetEvent;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -31,8 +33,21 @@ public class ResumeAggregate {
                 .build());
     }
 
+    @CommandHandler
+    public void handle(SetDefaultResumeCommand command) {
+        AggregateLifecycle.apply(ResumeDefaultSetEvent.builder()
+                .id(command.getId())
+                .candidateId(command.getCandidateId())
+                .build());
+    }
+
     @EventSourcingHandler
     public void on(ResumeCreatedEvent event) {
+        this.id = event.getId();
+    }
+
+    @EventSourcingHandler
+    public void on(ResumeDefaultSetEvent event) {
         this.id = event.getId();
     }
 }

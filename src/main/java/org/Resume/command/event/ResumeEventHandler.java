@@ -44,4 +44,18 @@ public class ResumeEventHandler {
 
         resumeRepository.save(resume);
     }
+
+    @EventHandler
+    public void on(ResumeDefaultSetEvent event) {
+        List<Resume> existingResumes = resumeRepository.findAllByCandidateId(event.getCandidateId());
+        for (Resume r : existingResumes) {
+            if (r.getId().equals(event.getId())) {
+                r.setIsDefault(true);
+            } else {
+                r.setIsDefault(false);
+            }
+            r.setUpdatedAt(LocalDateTime.now());
+            resumeRepository.save(r);
+        }
+    }
 }

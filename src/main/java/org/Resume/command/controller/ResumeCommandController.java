@@ -25,4 +25,12 @@ public class ResumeCommandController {
     ) {
         return resumeService.createResume(jwt.getSubject(), file, isDefault);
     }
+
+    @PutMapping("/{resumeId}/default")
+    public CompletableFuture<Void> setDefaultResume(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId
+    ) {
+        return resumeService.setDefaultResume(jwt.getSubject(), resumeId);
+    }
 }
