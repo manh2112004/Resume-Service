@@ -58,4 +58,31 @@ public class ResumeEventHandler {
             resumeRepository.save(r);
         }
     }
+
+    @EventHandler
+    public void on(ResumeDeletedEvent event) {
+        resumeRepository.findById(event.getId()).ifPresent(resume -> {
+            boolean wasDefault = Boolean.TRUE.equals(resume.getIsDefault());
+            resume.setStatus(ResumeStatus.DELETED);
+            resume.setIsDefault(false);
+            resume.setUpdatedAt(LocalDateTime.now());
+            resumeRepository.save(resume);
+
+            if (wasDefault) {
+                List<Resume> remaining = resumeRepository.findAllByCandidateId(event.getCandidateId());
+                Resume newDefault = null;
+                for (Resume r : remaining) {
+                    if (r.getStatus() != ResumeStatus.DELETED && !r.getId().equals(event.getId())) {
+                        newDefault = r;
+                        break;
+                    }
+                }
+                if (newDefault != null) {
+                    newDefault.setIsDefault(true);
+                    newDefault.setUpdatedAt(LocalDateTime.now());
+                    resumeRepository.save(newDefault);
+                }
+            }
+        });
+    }
 }

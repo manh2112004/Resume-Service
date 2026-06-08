@@ -33,4 +33,12 @@ public class ResumeCommandController {
     ) {
         return resumeService.setDefaultResume(jwt.getSubject(), resumeId);
     }
+
+    @DeleteMapping("/{resumeId}")
+    public CompletableFuture<Void> deleteResume(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId
+    ) {
+        return resumeService.deleteResume(jwt.getSubject(), resumeId);
+    }
 }

@@ -6,4 +6,5 @@ import java.util.concurrent.CompletableFuture;
 public interface ResumeService {
     CompletableFuture<String> createResume(String candidateId, MultipartFile file, Boolean isDefault);
     CompletableFuture<Void> setDefaultResume(String candidateId, String resumeId);
+    CompletableFuture<Void> deleteResume(String candidateId, String resumeId);
 }

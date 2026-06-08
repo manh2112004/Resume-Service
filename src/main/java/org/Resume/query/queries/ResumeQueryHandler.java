@@ -2,6 +2,7 @@ package org.Resume.query.queries;
 
 import org.Resume.command.data.Resume;
 import org.Resume.command.data.ResumeRepository;
+import org.Resume.constant.ResumeStatus;
 import org.Resume.query.model.response.ResumeResponse;
 import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ public class ResumeQueryHandler {
     public List<ResumeResponse> handle(GetMyResumesQuery query) {
         List<Resume> resumes = resumeRepository.findAllByCandidateId(query.getCandidateId());
         return resumes.stream()
+                .filter(r -> r.getStatus() != ResumeStatus.DELETED)
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -32,6 +34,10 @@ public class ResumeQueryHandler {
         Resume resume = resumeRepository.findById(query.getResumeId())
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.NOT_FOUND, "Resume không tồn tại"));
+        if (resume.getStatus() == ResumeStatus.DELETED) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND, "Resume không tồn tại");
+        }
         return mapToResponse(resume);
     }
 
