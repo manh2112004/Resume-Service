@@ -1,8 +1,10 @@
 package org.Resume.query.controller;
 
 import org.Resume.query.queries.GetResumeByIdQuery;
+import org.Resume.query.queries.GetResumeIndexDataQuery;
 import org.Resume.query.model.response.ResumeResponse;
 import org.Resume.query.model.response.ResumeSummaryResponse;
+import org.Resume.query.model.response.ResumeIndexDataResponse;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,5 +40,14 @@ public class ResumeInternalQueryController {
                 .status(res.getStatus() != null ? res.getStatus().name() : null)
                 .build());
     }
+
+    @GetMapping("/{resumeId}/index-data")
+    public CompletableFuture<ResumeIndexDataResponse> getResumeIndexData(@PathVariable String resumeId) {
+        return queryGateway.query(
+                new GetResumeIndexDataQuery(resumeId),
+                ResponseTypes.instanceOf(ResumeIndexDataResponse.class)
+        );
+    }
 }
+
 

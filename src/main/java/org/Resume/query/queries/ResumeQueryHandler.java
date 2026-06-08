@@ -10,12 +10,15 @@ import org.Resume.command.data.ResumeExperience;
 import org.Resume.command.data.ResumeExperienceRepository;
 import org.Resume.command.data.ResumeProject;
 import org.Resume.command.data.ResumeProjectRepository;
+import org.Resume.command.data.ResumeParsedData;
+import org.Resume.command.data.ResumeParsedDataRepository;
 import org.Resume.constant.ResumeStatus;
 import org.Resume.query.model.response.ResumeResponse;
 import org.Resume.query.model.response.ResumeSkillResponse;
 import org.Resume.query.model.response.ResumeEducationResponse;
 import org.Resume.query.model.response.ResumeExperienceResponse;
 import org.Resume.query.model.response.ResumeProjectResponse;
+import org.Resume.query.model.response.ResumeIndexDataResponse;
 import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -41,6 +44,56 @@ public class ResumeQueryHandler {
 
     @Autowired
     private ResumeProjectRepository resumeProjectRepository;
+
+    @Autowired
+    private ResumeParsedDataRepository resumeParsedDataRepository;
+
+    @QueryHandler
+    @Transactional(readOnly = true)
+    public ResumeIndexDataResponse handle(GetResumeIndexDataQuery query) {
+        Resume resume = resumeRepository.findById(query.getResumeId())
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Resume không tồn tại"));
+        if (resume.getStatus() == ResumeStatus.DELETED) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND, "Resume không tồn tại");
+        }
+
+        List<String> skills = resumeSkillRepository.findAllByResumeId(query.getResumeId())
+                .stream()
+                .map(ResumeSkill::getSkillName)
+                .collect(Collectors.toList());
+
+        List<ResumeEducationResponse> education = resumeEducationRepository.findAllByResumeId(query.getResumeId())
+                .stream()
+                .map(this::mapToEducationResponse)
+                .collect(Collectors.toList());
+
+        List<ResumeExperienceResponse> experience = resumeExperienceRepository.findAllByResumeId(query.getResumeId())
+                .stream()
+                .map(this::mapToExperienceResponse)
+                .collect(Collectors.toList());
+
+        List<ResumeProjectResponse> projects = resumeProjectRepository.findAllByResumeId(query.getResumeId())
+                .stream()
+                .map(this::mapToProjectResponse)
+                .collect(Collectors.toList());
+
+        String rawText = resumeParsedDataRepository.findByResumeId(query.getResumeId())
+                .map(ResumeParsedData::getRawText)
+                .orElse("");
+
+        return ResumeIndexDataResponse.builder()
+                .resumeId(resume.getId())
+                .candidateId(resume.getCandidateId())
+                .skills(skills)
+                .education(education)
+                .experience(experience)
+                .projects(projects)
+                .rawText(rawText)
+                .build();
+    }
+
 
     @QueryHandler
     @Transactional(readOnly = true)
