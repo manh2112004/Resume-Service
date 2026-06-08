@@ -8,6 +8,8 @@ import org.Resume.command.data.ResumeEducation;
 import org.Resume.command.data.ResumeEducationRepository;
 import org.Resume.command.data.ResumeExperience;
 import org.Resume.command.data.ResumeExperienceRepository;
+import org.Resume.command.data.ResumeProject;
+import org.Resume.command.data.ResumeProjectRepository;
 import org.Resume.constant.ResumeStatus;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,9 @@ public class ResumeEventHandler {
 
     @Autowired
     private ResumeExperienceRepository resumeExperienceRepository;
+
+    @Autowired
+    private ResumeProjectRepository resumeProjectRepository;
 
     @EventHandler
     public void on(ResumeCreatedEvent event) {
@@ -196,5 +201,38 @@ public class ResumeEventHandler {
     @EventHandler
     public void on(ResumeExperienceDeletedEvent event) {
         resumeExperienceRepository.deleteById(event.getExperienceId());
+    }
+
+    @EventHandler
+    public void on(ResumeProjectAddedEvent event) {
+        resumeRepository.findById(event.getResumeId()).ifPresent(resume -> {
+            ResumeProject project = ResumeProject.builder()
+                    .id(event.getProjectId())
+                    .resume(resume)
+                    .projectName(event.getProjectName())
+                    .role(event.getRole())
+                    .description(event.getDescription())
+                    .technologies(event.getTechnologies())
+                    .projectUrl(event.getProjectUrl())
+                    .build();
+            resumeProjectRepository.save(project);
+        });
+    }
+
+    @EventHandler
+    public void on(ResumeProjectUpdatedEvent event) {
+        resumeProjectRepository.findById(event.getProjectId()).ifPresent(project -> {
+            project.setProjectName(event.getProjectName());
+            project.setRole(event.getRole());
+            project.setDescription(event.getDescription());
+            project.setTechnologies(event.getTechnologies());
+            project.setProjectUrl(event.getProjectUrl());
+            resumeProjectRepository.save(project);
+        });
+    }
+
+    @EventHandler
+    public void on(ResumeProjectDeletedEvent event) {
+        resumeProjectRepository.deleteById(event.getProjectId());
     }
 }

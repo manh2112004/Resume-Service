@@ -1,17 +1,6 @@
 package org.Resume.command.aggregate;
 
-import org.Resume.command.command.CreateResumeCommand;
-import org.Resume.command.command.SetDefaultResumeCommand;
-import org.Resume.command.command.DeleteResumeCommand;
-import org.Resume.command.command.AddResumeSkillCommand;
-import org.Resume.command.command.UpdateResumeSkillCommand;
-import org.Resume.command.command.DeleteResumeSkillCommand;
-import org.Resume.command.command.AddResumeEducationCommand;
-import org.Resume.command.command.UpdateResumeEducationCommand;
-import org.Resume.command.command.DeleteResumeEducationCommand;
-import org.Resume.command.command.AddResumeExperienceCommand;
-import org.Resume.command.command.UpdateResumeExperienceCommand;
-import org.Resume.command.command.DeleteResumeExperienceCommand;
+import org.Resume.command.command.*;
 import org.Resume.command.event.ResumeCreatedEvent;
 import org.Resume.command.event.ResumeDefaultSetEvent;
 import org.Resume.command.event.ResumeDeletedEvent;
@@ -24,6 +13,9 @@ import org.Resume.command.event.ResumeEducationDeletedEvent;
 import org.Resume.command.event.ResumeExperienceAddedEvent;
 import org.Resume.command.event.ResumeExperienceUpdatedEvent;
 import org.Resume.command.event.ResumeExperienceDeletedEvent;
+import org.Resume.command.event.ResumeProjectAddedEvent;
+import org.Resume.command.event.ResumeProjectUpdatedEvent;
+import org.Resume.command.event.ResumeProjectDeletedEvent;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -169,6 +161,40 @@ public class ResumeAggregate {
                 .build());
     }
 
+    @CommandHandler
+    public void handle(AddResumeProjectCommand command) {
+        AggregateLifecycle.apply(ResumeProjectAddedEvent.builder()
+                .resumeId(command.getResumeId())
+                .projectId(command.getProjectId())
+                .projectName(command.getProjectName())
+                .role(command.getRole())
+                .description(command.getDescription())
+                .technologies(command.getTechnologies())
+                .projectUrl(command.getProjectUrl())
+                .build());
+    }
+
+    @CommandHandler
+    public void handle(UpdateResumeProjectCommand command) {
+        AggregateLifecycle.apply(ResumeProjectUpdatedEvent.builder()
+                .resumeId(command.getResumeId())
+                .projectId(command.getProjectId())
+                .projectName(command.getProjectName())
+                .role(command.getRole())
+                .description(command.getDescription())
+                .technologies(command.getTechnologies())
+                .projectUrl(command.getProjectUrl())
+                .build());
+    }
+
+    @CommandHandler
+    public void handle(DeleteResumeProjectCommand command) {
+        AggregateLifecycle.apply(ResumeProjectDeletedEvent.builder()
+                .resumeId(command.getResumeId())
+                .projectId(command.getProjectId())
+                .build());
+    }
+
     @EventSourcingHandler
     public void on(ResumeCreatedEvent event) {
         this.id = event.getId();
@@ -206,6 +232,21 @@ public class ResumeAggregate {
 
     @EventSourcingHandler
     public void on(ResumeExperienceDeletedEvent event) {
+        // No-op
+    }
+
+    @EventSourcingHandler
+    public void on(ResumeProjectAddedEvent event) {
+        // No-op
+    }
+
+    @EventSourcingHandler
+    public void on(ResumeProjectUpdatedEvent event) {
+        // No-op
+    }
+
+    @EventSourcingHandler
+    public void on(ResumeProjectDeletedEvent event) {
         // No-op
     }
 }

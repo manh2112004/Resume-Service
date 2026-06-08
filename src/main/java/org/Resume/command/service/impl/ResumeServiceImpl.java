@@ -132,6 +132,9 @@ public class ResumeServiceImpl implements ResumeService {
     @Autowired
     private org.Resume.command.data.ResumeExperienceRepository resumeExperienceRepository;
 
+    @Autowired
+    private org.Resume.command.data.ResumeProjectRepository resumeProjectRepository;
+
     @Override
     public CompletableFuture<String> addSkill(String candidateId, String resumeId, String skillName, String level) {
         if (candidateId == null || candidateId.isBlank()) {
@@ -457,6 +460,117 @@ public class ResumeServiceImpl implements ResumeService {
         org.Resume.command.command.DeleteResumeExperienceCommand command = org.Resume.command.command.DeleteResumeExperienceCommand.builder()
                 .resumeId(resumeId)
                 .experienceId(experienceId)
+                .build();
+
+        return commandGateway.send(command).thenApply(result -> null);
+    }
+
+    @Override
+    public CompletableFuture<String> addProject(String candidateId, String resumeId, String projectName, String role, String description, String technologies, String projectUrl) {
+        if (candidateId == null || candidateId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không xác định được người dùng từ token");
+        }
+
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV"));
+
+        if (resume.getStatus() == org.Resume.constant.ResumeStatus.DELETED) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV");
+        }
+
+        if (!resume.getCandidateId().equals(candidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa CV này");
+        }
+
+        if (projectName == null || projectName.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên dự án không được để trống");
+        }
+
+        String projectId = UUID.randomUUID().toString();
+
+        org.Resume.command.command.AddResumeProjectCommand command = org.Resume.command.command.AddResumeProjectCommand.builder()
+                .resumeId(resumeId)
+                .projectId(projectId)
+                .projectName(projectName)
+                .role(role)
+                .description(description)
+                .technologies(technologies)
+                .projectUrl(projectUrl)
+                .build();
+
+        return commandGateway.send(command).thenApply(result -> projectId);
+    }
+
+    @Override
+    public CompletableFuture<Void> updateProject(String candidateId, String resumeId, String projectId, String projectName, String role, String description, String technologies, String projectUrl) {
+        if (candidateId == null || candidateId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không xác định được người dùng từ token");
+        }
+
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV"));
+
+        if (resume.getStatus() == org.Resume.constant.ResumeStatus.DELETED) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV");
+        }
+
+        if (!resume.getCandidateId().equals(candidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa CV này");
+        }
+
+        org.Resume.command.data.ResumeProject project = resumeProjectRepository.findById(projectId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy thông tin dự án"));
+
+        if (!project.getResume().getId().equals(resumeId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thông tin dự án không thuộc về CV này");
+        }
+
+        String finalProjectName = (projectName == null || projectName.isBlank()) ? project.getProjectName() : projectName;
+        String finalRole = (role == null || role.isBlank()) ? project.getRole() : role;
+        String finalDescription = (description == null || description.isBlank()) ? project.getDescription() : description;
+        String finalTechnologies = (technologies == null || technologies.isBlank()) ? project.getTechnologies() : technologies;
+        String finalProjectUrl = (projectUrl == null || projectUrl.isBlank()) ? project.getProjectUrl() : projectUrl;
+
+        org.Resume.command.command.UpdateResumeProjectCommand command = org.Resume.command.command.UpdateResumeProjectCommand.builder()
+                .resumeId(resumeId)
+                .projectId(projectId)
+                .projectName(finalProjectName)
+                .role(finalRole)
+                .description(finalDescription)
+                .technologies(finalTechnologies)
+                .projectUrl(finalProjectUrl)
+                .build();
+
+        return commandGateway.send(command).thenApply(result -> null);
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteProject(String candidateId, String resumeId, String projectId) {
+        if (candidateId == null || candidateId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không xác định được người dùng từ token");
+        }
+
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV"));
+
+        if (resume.getStatus() == org.Resume.constant.ResumeStatus.DELETED) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV");
+        }
+
+        if (!resume.getCandidateId().equals(candidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa CV này");
+        }
+
+        org.Resume.command.data.ResumeProject project = resumeProjectRepository.findById(projectId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy thông tin dự án"));
+
+        if (!project.getResume().getId().equals(resumeId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thông tin dự án không thuộc về CV này");
+        }
+
+        org.Resume.command.command.DeleteResumeProjectCommand command = org.Resume.command.command.DeleteResumeProjectCommand.builder()
+                .resumeId(resumeId)
+                .projectId(projectId)
                 .build();
 
         return commandGateway.send(command).thenApply(result -> null);

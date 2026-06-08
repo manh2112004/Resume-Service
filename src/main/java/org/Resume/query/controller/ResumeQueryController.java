@@ -68,4 +68,14 @@ public class ResumeQueryController {
                 ResponseTypes.multipleInstancesOf(org.Resume.query.model.response.ResumeExperienceResponse.class)
         );
     }
+
+    @GetMapping("/{resumeId}/projects")
+    public CompletableFuture<List<org.Resume.query.model.response.ResumeProjectResponse>> getResumeProjects(
+            @PathVariable String resumeId
+    ) {
+        return queryGateway.query(
+                new org.Resume.query.queries.GetResumeProjectsQuery(resumeId),
+                ResponseTypes.multipleInstancesOf(org.Resume.query.model.response.ResumeProjectResponse.class)
+        );
+    }
 }

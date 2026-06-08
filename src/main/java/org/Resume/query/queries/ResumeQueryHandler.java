@@ -8,11 +8,14 @@ import org.Resume.command.data.ResumeEducation;
 import org.Resume.command.data.ResumeEducationRepository;
 import org.Resume.command.data.ResumeExperience;
 import org.Resume.command.data.ResumeExperienceRepository;
+import org.Resume.command.data.ResumeProject;
+import org.Resume.command.data.ResumeProjectRepository;
 import org.Resume.constant.ResumeStatus;
 import org.Resume.query.model.response.ResumeResponse;
 import org.Resume.query.model.response.ResumeSkillResponse;
 import org.Resume.query.model.response.ResumeEducationResponse;
 import org.Resume.query.model.response.ResumeExperienceResponse;
+import org.Resume.query.model.response.ResumeProjectResponse;
 import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,6 +38,9 @@ public class ResumeQueryHandler {
 
     @Autowired
     private ResumeExperienceRepository resumeExperienceRepository;
+
+    @Autowired
+    private ResumeProjectRepository resumeProjectRepository;
 
     @QueryHandler
     @Transactional(readOnly = true)
@@ -157,6 +163,35 @@ public class ResumeQueryHandler {
                 .endDate(experience.getEndDate())
                 .currentJob(experience.getCurrentJob())
                 .description(experience.getDescription())
+                .build();
+    }
+
+    @QueryHandler
+    @Transactional(readOnly = true)
+    public List<ResumeProjectResponse> handle(GetResumeProjectsQuery query) {
+        Resume resume = resumeRepository.findById(query.getResumeId())
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Resume không tồn tại"));
+        if (resume.getStatus() == ResumeStatus.DELETED) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND, "Resume không tồn tại");
+        }
+
+        List<ResumeProject> projects = resumeProjectRepository.findAllByResumeId(query.getResumeId());
+        return projects.stream()
+                .map(this::mapToProjectResponse)
+                .collect(Collectors.toList());
+    }
+
+    private ResumeProjectResponse mapToProjectResponse(ResumeProject project) {
+        return ResumeProjectResponse.builder()
+                .id(project.getId())
+                .resumeId(project.getResume().getId())
+                .projectName(project.getProjectName())
+                .role(project.getRole())
+                .description(project.getDescription())
+                .technologies(project.getTechnologies())
+                .projectUrl(project.getProjectUrl())
                 .build();
     }
 }

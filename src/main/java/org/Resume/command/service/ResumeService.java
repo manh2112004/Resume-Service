@@ -19,4 +19,8 @@ public interface ResumeService {
     CompletableFuture<String> addExperience(String candidateId, String resumeId, String companyName, String position, LocalDate startDate, LocalDate endDate, Boolean currentJob, String description);
     CompletableFuture<Void> updateExperience(String candidateId, String resumeId, String experienceId, String companyName, String position, LocalDate startDate, LocalDate endDate, Boolean currentJob, String description);
     CompletableFuture<Void> deleteExperience(String candidateId, String resumeId, String experienceId);
+
+    CompletableFuture<String> addProject(String candidateId, String resumeId, String projectName, String role, String description, String technologies, String projectUrl);
+    CompletableFuture<Void> updateProject(String candidateId, String resumeId, String projectId, String projectName, String role, String description, String technologies, String projectUrl);
+    CompletableFuture<Void> deleteProject(String candidateId, String resumeId, String projectId);
 }

@@ -127,6 +127,34 @@ public class ResumeCommandController {
         return resumeService.deleteExperience(jwt.getSubject(), resumeId, experienceId);
     }
 
+    @PostMapping("/{resumeId}/projects")
+    public CompletableFuture<String> addProject(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @RequestBody ProjectRequest request
+    ) {
+        return resumeService.addProject(jwt.getSubject(), resumeId, request.getProjectName(), request.getRole(), request.getDescription(), request.getTechnologies(), request.getProjectUrl());
+    }
+
+    @PutMapping("/{resumeId}/projects/{projectId}")
+    public CompletableFuture<Void> updateProject(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @PathVariable String projectId,
+            @RequestBody ProjectRequest request
+    ) {
+        return resumeService.updateProject(jwt.getSubject(), resumeId, projectId, request.getProjectName(), request.getRole(), request.getDescription(), request.getTechnologies(), request.getProjectUrl());
+    }
+
+    @DeleteMapping("/{resumeId}/projects/{projectId}")
+    public CompletableFuture<Void> deleteProject(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @PathVariable String projectId
+    ) {
+        return resumeService.deleteProject(jwt.getSubject(), resumeId, projectId);
+    }
+
     @lombok.Data
     public static class SkillRequest {
         private String skillName;
@@ -151,5 +179,14 @@ public class ResumeCommandController {
         private LocalDate endDate;
         private Boolean currentJob;
         private String description;
+    }
+
+    @lombok.Data
+    public static class ProjectRequest {
+        private String projectName;
+        private String role;
+        private String description;
+        private String technologies;
+        private String projectUrl;
     }
 }
