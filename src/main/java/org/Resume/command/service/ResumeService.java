@@ -1,0 +1,8 @@
+package org.Resume.command.service;
+
+import org.springframework.web.multipart.MultipartFile;
+import java.util.concurrent.CompletableFuture;
+
+public interface ResumeService {
+    CompletableFuture<String> createResume(String candidateId, MultipartFile file, Boolean isDefault);
+}
