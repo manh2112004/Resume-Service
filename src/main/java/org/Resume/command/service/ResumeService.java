@@ -10,4 +10,8 @@ public interface ResumeService {
     CompletableFuture<String> addSkill(String candidateId, String resumeId, String skillName, String level);
     CompletableFuture<Void> updateSkill(String candidateId, String resumeId, String skillId, String skillName, String level);
     CompletableFuture<Void> deleteSkill(String candidateId, String resumeId, String skillId);
+
+    CompletableFuture<String> addEducation(String candidateId, String resumeId, String schoolName, String major, String degree, String startDate, String endDate, String description);
+    CompletableFuture<Void> updateEducation(String candidateId, String resumeId, String educationId, String schoolName, String major, String degree, String startDate, String endDate, String description);
+    CompletableFuture<Void> deleteEducation(String candidateId, String resumeId, String educationId);
 }

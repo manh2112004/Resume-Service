@@ -70,9 +70,47 @@ public class ResumeCommandController {
         return resumeService.deleteSkill(jwt.getSubject(), resumeId, skillId);
     }
 
+    @PostMapping("/{resumeId}/educations")
+    public CompletableFuture<String> addEducation(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @RequestBody EducationRequest request
+    ) {
+        return resumeService.addEducation(jwt.getSubject(), resumeId, request.getSchoolName(), request.getMajor(), request.getDegree(), request.getStartDate(), request.getEndDate(), request.getDescription());
+    }
+
+    @PutMapping("/{resumeId}/educations/{educationId}")
+    public CompletableFuture<Void> updateEducation(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @PathVariable String educationId,
+            @RequestBody EducationRequest request
+    ) {
+        return resumeService.updateEducation(jwt.getSubject(), resumeId, educationId, request.getSchoolName(), request.getMajor(), request.getDegree(), request.getStartDate(), request.getEndDate(), request.getDescription());
+    }
+
+    @DeleteMapping("/{resumeId}/educations/{educationId}")
+    public CompletableFuture<Void> deleteEducation(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @PathVariable String educationId
+    ) {
+        return resumeService.deleteEducation(jwt.getSubject(), resumeId, educationId);
+    }
+
     @lombok.Data
     public static class SkillRequest {
         private String skillName;
         private String level;
+    }
+
+    @lombok.Data
+    public static class EducationRequest {
+        private String schoolName;
+        private String major;
+        private String degree;
+        private String startDate;
+        private String endDate;
+        private String description;
     }
 }

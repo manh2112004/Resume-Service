@@ -4,6 +4,8 @@ import org.Resume.command.data.Resume;
 import org.Resume.command.data.ResumeRepository;
 import org.Resume.command.data.ResumeSkill;
 import org.Resume.command.data.ResumeSkillRepository;
+import org.Resume.command.data.ResumeEducation;
+import org.Resume.command.data.ResumeEducationRepository;
 import org.Resume.constant.ResumeStatus;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,9 @@ public class ResumeEventHandler {
 
     @Autowired
     private ResumeSkillRepository resumeSkillRepository;
+
+    @Autowired
+    private ResumeEducationRepository resumeEducationRepository;
 
     @EventHandler
     public void on(ResumeCreatedEvent event) {
@@ -116,5 +121,40 @@ public class ResumeEventHandler {
     @EventHandler
     public void on(ResumeSkillDeletedEvent event) {
         resumeSkillRepository.deleteById(event.getSkillId());
+    }
+
+    @EventHandler
+    public void on(ResumeEducationAddedEvent event) {
+        resumeRepository.findById(event.getResumeId()).ifPresent(resume -> {
+            ResumeEducation education = ResumeEducation.builder()
+                    .id(event.getEducationId())
+                    .resume(resume)
+                    .schoolName(event.getSchoolName())
+                    .major(event.getMajor())
+                    .degree(event.getDegree())
+                    .startDate(event.getStartDate())
+                    .endDate(event.getEndDate())
+                    .description(event.getDescription())
+                    .build();
+            resumeEducationRepository.save(education);
+        });
+    }
+
+    @EventHandler
+    public void on(ResumeEducationUpdatedEvent event) {
+        resumeEducationRepository.findById(event.getEducationId()).ifPresent(education -> {
+            education.setSchoolName(event.getSchoolName());
+            education.setMajor(event.getMajor());
+            education.setDegree(event.getDegree());
+            education.setStartDate(event.getStartDate());
+            education.setEndDate(event.getEndDate());
+            education.setDescription(event.getDescription());
+            resumeEducationRepository.save(education);
+        });
+    }
+
+    @EventHandler
+    public void on(ResumeEducationDeletedEvent event) {
+        resumeEducationRepository.deleteById(event.getEducationId());
     }
 }

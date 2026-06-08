@@ -1,24 +1,15 @@
-package org.Resume.command.data;
+package org.Resume.query.model.response;
 
-import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
-@Table(name = "resume_educations")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ResumeEducation {
-
-    @Id
+public class ResumeEducationResponse {
     private String id;
-
-    @ManyToOne
-    @JoinColumn(name = "resume_id", nullable = false)
-    private Resume resume;
-
+    private String resumeId;
     private String schoolName;
     private String major;
     private String degree;
