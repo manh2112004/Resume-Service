@@ -26,6 +26,15 @@ public class ResumeQueryHandler {
                 .collect(Collectors.toList());
     }
 
+    @QueryHandler
+    @Transactional(readOnly = true)
+    public ResumeResponse handle(GetResumeByIdQuery query) {
+        Resume resume = resumeRepository.findById(query.getResumeId())
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Resume không tồn tại"));
+        return mapToResponse(resume);
+    }
+
     private ResumeResponse mapToResponse(Resume resume) {
         return ResumeResponse.builder()
                 .id(resume.getId())
