@@ -6,6 +6,8 @@ import org.Resume.command.data.ResumeSkill;
 import org.Resume.command.data.ResumeSkillRepository;
 import org.Resume.command.data.ResumeEducation;
 import org.Resume.command.data.ResumeEducationRepository;
+import org.Resume.command.data.ResumeExperience;
+import org.Resume.command.data.ResumeExperienceRepository;
 import org.Resume.constant.ResumeStatus;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,9 @@ public class ResumeEventHandler {
 
     @Autowired
     private ResumeEducationRepository resumeEducationRepository;
+
+    @Autowired
+    private ResumeExperienceRepository resumeExperienceRepository;
 
     @EventHandler
     public void on(ResumeCreatedEvent event) {
@@ -156,5 +161,40 @@ public class ResumeEventHandler {
     @EventHandler
     public void on(ResumeEducationDeletedEvent event) {
         resumeEducationRepository.deleteById(event.getEducationId());
+    }
+
+    @EventHandler
+    public void on(ResumeExperienceAddedEvent event) {
+        resumeRepository.findById(event.getResumeId()).ifPresent(resume -> {
+            ResumeExperience experience = ResumeExperience.builder()
+                    .id(event.getExperienceId())
+                    .resume(resume)
+                    .companyName(event.getCompanyName())
+                    .position(event.getPosition())
+                    .startDate(event.getStartDate())
+                    .endDate(event.getEndDate())
+                    .currentJob(event.getCurrentJob())
+                    .description(event.getDescription())
+                    .build();
+            resumeExperienceRepository.save(experience);
+        });
+    }
+
+    @EventHandler
+    public void on(ResumeExperienceUpdatedEvent event) {
+        resumeExperienceRepository.findById(event.getExperienceId()).ifPresent(experience -> {
+            experience.setCompanyName(event.getCompanyName());
+            experience.setPosition(event.getPosition());
+            experience.setStartDate(event.getStartDate());
+            experience.setEndDate(event.getEndDate());
+            experience.setCurrentJob(event.getCurrentJob());
+            experience.setDescription(event.getDescription());
+            resumeExperienceRepository.save(experience);
+        });
+    }
+
+    @EventHandler
+    public void on(ResumeExperienceDeletedEvent event) {
+        resumeExperienceRepository.deleteById(event.getExperienceId());
     }
 }

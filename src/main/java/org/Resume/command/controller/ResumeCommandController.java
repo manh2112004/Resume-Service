@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -98,6 +99,34 @@ public class ResumeCommandController {
         return resumeService.deleteEducation(jwt.getSubject(), resumeId, educationId);
     }
 
+    @PostMapping("/{resumeId}/experiences")
+    public CompletableFuture<String> addExperience(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @RequestBody ExperienceRequest request
+    ) {
+        return resumeService.addExperience(jwt.getSubject(), resumeId, request.getCompanyName(), request.getPosition(), request.getStartDate(), request.getEndDate(), request.getCurrentJob(), request.getDescription());
+    }
+
+    @PutMapping("/{resumeId}/experiences/{experienceId}")
+    public CompletableFuture<Void> updateExperience(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @PathVariable String experienceId,
+            @RequestBody ExperienceRequest request
+    ) {
+        return resumeService.updateExperience(jwt.getSubject(), resumeId, experienceId, request.getCompanyName(), request.getPosition(), request.getStartDate(), request.getEndDate(), request.getCurrentJob(), request.getDescription());
+    }
+
+    @DeleteMapping("/{resumeId}/experiences/{experienceId}")
+    public CompletableFuture<Void> deleteExperience(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @PathVariable String experienceId
+    ) {
+        return resumeService.deleteExperience(jwt.getSubject(), resumeId, experienceId);
+    }
+
     @lombok.Data
     public static class SkillRequest {
         private String skillName;
@@ -111,6 +140,16 @@ public class ResumeCommandController {
         private String degree;
         private String startDate;
         private String endDate;
+        private String description;
+    }
+
+    @lombok.Data
+    public static class ExperienceRequest {
+        private String companyName;
+        private String position;
+        private LocalDate startDate;
+        private LocalDate endDate;
+        private Boolean currentJob;
         private String description;
     }
 }

@@ -6,10 +6,13 @@ import org.Resume.command.data.ResumeSkill;
 import org.Resume.command.data.ResumeSkillRepository;
 import org.Resume.command.data.ResumeEducation;
 import org.Resume.command.data.ResumeEducationRepository;
+import org.Resume.command.data.ResumeExperience;
+import org.Resume.command.data.ResumeExperienceRepository;
 import org.Resume.constant.ResumeStatus;
 import org.Resume.query.model.response.ResumeResponse;
 import org.Resume.query.model.response.ResumeSkillResponse;
 import org.Resume.query.model.response.ResumeEducationResponse;
+import org.Resume.query.model.response.ResumeExperienceResponse;
 import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,6 +32,9 @@ public class ResumeQueryHandler {
 
     @Autowired
     private ResumeEducationRepository resumeEducationRepository;
+
+    @Autowired
+    private ResumeExperienceRepository resumeExperienceRepository;
 
     @QueryHandler
     @Transactional(readOnly = true)
@@ -121,6 +127,36 @@ public class ResumeQueryHandler {
                 .startDate(education.getStartDate())
                 .endDate(education.getEndDate())
                 .description(education.getDescription())
+                .build();
+    }
+
+    @QueryHandler
+    @Transactional(readOnly = true)
+    public List<ResumeExperienceResponse> handle(GetResumeExperiencesQuery query) {
+        Resume resume = resumeRepository.findById(query.getResumeId())
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Resume không tồn tại"));
+        if (resume.getStatus() == ResumeStatus.DELETED) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND, "Resume không tồn tại");
+        }
+
+        List<ResumeExperience> experiences = resumeExperienceRepository.findAllByResumeId(query.getResumeId());
+        return experiences.stream()
+                .map(this::mapToExperienceResponse)
+                .collect(Collectors.toList());
+    }
+
+    private ResumeExperienceResponse mapToExperienceResponse(ResumeExperience experience) {
+        return ResumeExperienceResponse.builder()
+                .id(experience.getId())
+                .resumeId(experience.getResume().getId())
+                .companyName(experience.getCompanyName())
+                .position(experience.getPosition())
+                .startDate(experience.getStartDate())
+                .endDate(experience.getEndDate())
+                .currentJob(experience.getCurrentJob())
+                .description(experience.getDescription())
                 .build();
     }
 }

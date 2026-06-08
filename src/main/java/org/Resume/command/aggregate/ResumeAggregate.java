@@ -9,6 +9,9 @@ import org.Resume.command.command.DeleteResumeSkillCommand;
 import org.Resume.command.command.AddResumeEducationCommand;
 import org.Resume.command.command.UpdateResumeEducationCommand;
 import org.Resume.command.command.DeleteResumeEducationCommand;
+import org.Resume.command.command.AddResumeExperienceCommand;
+import org.Resume.command.command.UpdateResumeExperienceCommand;
+import org.Resume.command.command.DeleteResumeExperienceCommand;
 import org.Resume.command.event.ResumeCreatedEvent;
 import org.Resume.command.event.ResumeDefaultSetEvent;
 import org.Resume.command.event.ResumeDeletedEvent;
@@ -18,6 +21,9 @@ import org.Resume.command.event.ResumeSkillDeletedEvent;
 import org.Resume.command.event.ResumeEducationAddedEvent;
 import org.Resume.command.event.ResumeEducationUpdatedEvent;
 import org.Resume.command.event.ResumeEducationDeletedEvent;
+import org.Resume.command.event.ResumeExperienceAddedEvent;
+import org.Resume.command.event.ResumeExperienceUpdatedEvent;
+import org.Resume.command.event.ResumeExperienceDeletedEvent;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -127,6 +133,42 @@ public class ResumeAggregate {
                 .build());
     }
 
+    @CommandHandler
+    public void handle(AddResumeExperienceCommand command) {
+        AggregateLifecycle.apply(ResumeExperienceAddedEvent.builder()
+                .resumeId(command.getResumeId())
+                .experienceId(command.getExperienceId())
+                .companyName(command.getCompanyName())
+                .position(command.getPosition())
+                .startDate(command.getStartDate())
+                .endDate(command.getEndDate())
+                .currentJob(command.getCurrentJob())
+                .description(command.getDescription())
+                .build());
+    }
+
+    @CommandHandler
+    public void handle(UpdateResumeExperienceCommand command) {
+        AggregateLifecycle.apply(ResumeExperienceUpdatedEvent.builder()
+                .resumeId(command.getResumeId())
+                .experienceId(command.getExperienceId())
+                .companyName(command.getCompanyName())
+                .position(command.getPosition())
+                .startDate(command.getStartDate())
+                .endDate(command.getEndDate())
+                .currentJob(command.getCurrentJob())
+                .description(command.getDescription())
+                .build());
+    }
+
+    @CommandHandler
+    public void handle(DeleteResumeExperienceCommand command) {
+        AggregateLifecycle.apply(ResumeExperienceDeletedEvent.builder()
+                .resumeId(command.getResumeId())
+                .experienceId(command.getExperienceId())
+                .build());
+    }
+
     @EventSourcingHandler
     public void on(ResumeCreatedEvent event) {
         this.id = event.getId();
@@ -149,6 +191,21 @@ public class ResumeAggregate {
 
     @EventSourcingHandler
     public void on(ResumeEducationDeletedEvent event) {
+        // No-op
+    }
+
+    @EventSourcingHandler
+    public void on(ResumeExperienceAddedEvent event) {
+        // No-op
+    }
+
+    @EventSourcingHandler
+    public void on(ResumeExperienceUpdatedEvent event) {
+        // No-op
+    }
+
+    @EventSourcingHandler
+    public void on(ResumeExperienceDeletedEvent event) {
         // No-op
     }
 }
