@@ -3,6 +3,7 @@ package org.Resume.query.controller;
 import org.Resume.query.model.response.PageResponse;
 import org.Resume.query.model.response.ResumePageResponse;
 import org.Resume.query.model.response.ResumeResponse;
+import org.Resume.query.queries.GetResumeByIdQuery;
 import org.Resume.query.queries.GetResumesQuery;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
@@ -44,6 +45,25 @@ public class AdminResumeQueryController {
         return queryGateway.query(
                 new GetResumesQuery(page, size),
                 ResponseTypes.instanceOf(ResumePageResponse.class)
+        );
+    }
+
+    @GetMapping("/{resumeId}")
+    public CompletableFuture<ResumeResponse> getResumeById(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId
+    ) {
+        if (jwt == null || jwt.getSubject() == null || jwt.getSubject().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không xác định được user từ token");
+        }
+
+        if (!hasAdminRole(jwt)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập thông tin này");
+        }
+
+        return queryGateway.query(
+                new GetResumeByIdQuery(resumeId),
+                ResponseTypes.instanceOf(ResumeResponse.class)
         );
     }
 
