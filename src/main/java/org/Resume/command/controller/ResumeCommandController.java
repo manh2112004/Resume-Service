@@ -41,4 +41,38 @@ public class ResumeCommandController {
     ) {
         return resumeService.deleteResume(jwt.getSubject(), resumeId);
     }
+
+    @PostMapping("/{resumeId}/skills")
+    public CompletableFuture<String> addSkill(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @RequestBody SkillRequest request
+    ) {
+        return resumeService.addSkill(jwt.getSubject(), resumeId, request.getSkillName(), request.getLevel());
+    }
+
+    @PutMapping("/{resumeId}/skills/{skillId}")
+    public CompletableFuture<Void> updateSkill(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @PathVariable String skillId,
+            @RequestBody SkillRequest request
+    ) {
+        return resumeService.updateSkill(jwt.getSubject(), resumeId, skillId, request.getSkillName(), request.getLevel());
+    }
+
+    @DeleteMapping("/{resumeId}/skills/{skillId}")
+    public CompletableFuture<Void> deleteSkill(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId,
+            @PathVariable String skillId
+    ) {
+        return resumeService.deleteSkill(jwt.getSubject(), resumeId, skillId);
+    }
+
+    @lombok.Data
+    public static class SkillRequest {
+        private String skillName;
+        private String level;
+    }
 }

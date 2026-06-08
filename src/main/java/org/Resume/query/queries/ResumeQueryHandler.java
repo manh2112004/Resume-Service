@@ -2,8 +2,11 @@ package org.Resume.query.queries;
 
 import org.Resume.command.data.Resume;
 import org.Resume.command.data.ResumeRepository;
+import org.Resume.command.data.ResumeSkill;
+import org.Resume.command.data.ResumeSkillRepository;
 import org.Resume.constant.ResumeStatus;
 import org.Resume.query.model.response.ResumeResponse;
+import org.Resume.query.model.response.ResumeSkillResponse;
 import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,6 +20,9 @@ public class ResumeQueryHandler {
 
     @Autowired
     private ResumeRepository resumeRepository;
+
+    @Autowired
+    private ResumeSkillRepository resumeSkillRepository;
 
     @QueryHandler
     @Transactional(readOnly = true)
@@ -41,6 +47,23 @@ public class ResumeQueryHandler {
         return mapToResponse(resume);
     }
 
+    @QueryHandler
+    @Transactional(readOnly = true)
+    public List<ResumeSkillResponse> handle(GetResumeSkillsQuery query) {
+        Resume resume = resumeRepository.findById(query.getResumeId())
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Resume không tồn tại"));
+        if (resume.getStatus() == ResumeStatus.DELETED) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND, "Resume không tồn tại");
+        }
+
+        List<ResumeSkill> skills = resumeSkillRepository.findAllByResumeId(query.getResumeId());
+        return skills.stream()
+                .map(this::mapToSkillResponse)
+                .collect(Collectors.toList());
+    }
+
     private ResumeResponse mapToResponse(Resume resume) {
         return ResumeResponse.builder()
                 .id(resume.getId())
@@ -53,6 +76,15 @@ public class ResumeQueryHandler {
                 .isDefault(resume.getIsDefault())
                 .uploadedAt(resume.getUploadedAt())
                 .updatedAt(resume.getUpdatedAt())
+                .build();
+    }
+
+    private ResumeSkillResponse mapToSkillResponse(ResumeSkill skill) {
+        return ResumeSkillResponse.builder()
+                .id(skill.getId())
+                .resumeId(skill.getResume().getId())
+                .skillName(skill.getSkillName())
+                .level(skill.getLevel())
                 .build();
     }
 }

@@ -122,6 +122,111 @@ public class ResumeServiceImpl implements ResumeService {
         return commandGateway.send(command).thenApply(result -> null);
     }
 
+    @Autowired
+    private org.Resume.command.data.ResumeSkillRepository resumeSkillRepository;
+
+    @Override
+    public CompletableFuture<String> addSkill(String candidateId, String resumeId, String skillName, String level) {
+        if (candidateId == null || candidateId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không xác định được người dùng từ token");
+        }
+
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV"));
+
+        if (resume.getStatus() == org.Resume.constant.ResumeStatus.DELETED) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV");
+        }
+
+        if (!resume.getCandidateId().equals(candidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa CV này");
+        }
+
+        if (skillName == null || skillName.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên kỹ năng không được để trống");
+        }
+
+        String skillId = UUID.randomUUID().toString();
+
+        org.Resume.command.command.AddResumeSkillCommand command = org.Resume.command.command.AddResumeSkillCommand.builder()
+                .resumeId(resumeId)
+                .skillId(skillId)
+                .skillName(skillName)
+                .level(level)
+                .build();
+
+        return commandGateway.send(command).thenApply(result -> skillId);
+    }
+
+    @Override
+    public CompletableFuture<Void> updateSkill(String candidateId, String resumeId, String skillId, String skillName, String level) {
+        if (candidateId == null || candidateId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không xác định được người dùng từ token");
+        }
+
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV"));
+
+        if (resume.getStatus() == org.Resume.constant.ResumeStatus.DELETED) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV");
+        }
+
+        if (!resume.getCandidateId().equals(candidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa CV này");
+        }
+
+        org.Resume.command.data.ResumeSkill skill = resumeSkillRepository.findById(skillId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy kỹ năng"));
+
+        if (!skill.getResume().getId().equals(resumeId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kỹ năng không thuộc về CV này");
+        }
+
+        String finalSkillName = (skillName == null || skillName.isBlank()) ? skill.getSkillName() : skillName;
+        String finalLevel = (level == null || level.isBlank()) ? skill.getLevel() : level;
+
+        org.Resume.command.command.UpdateResumeSkillCommand command = org.Resume.command.command.UpdateResumeSkillCommand.builder()
+                .resumeId(resumeId)
+                .skillId(skillId)
+                .skillName(finalSkillName)
+                .level(finalLevel)
+                .build();
+
+        return commandGateway.send(command).thenApply(result -> null);
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteSkill(String candidateId, String resumeId, String skillId) {
+        if (candidateId == null || candidateId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không xác định được người dùng từ token");
+        }
+
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV"));
+
+        if (resume.getStatus() == org.Resume.constant.ResumeStatus.DELETED) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy CV");
+        }
+
+        if (!resume.getCandidateId().equals(candidateId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa CV này");
+        }
+
+        org.Resume.command.data.ResumeSkill skill = resumeSkillRepository.findById(skillId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy kỹ năng"));
+
+        if (!skill.getResume().getId().equals(resumeId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kỹ năng không thuộc về CV này");
+        }
+
+        org.Resume.command.command.DeleteResumeSkillCommand command = org.Resume.command.command.DeleteResumeSkillCommand.builder()
+                .resumeId(resumeId)
+                .skillId(skillId)
+                .build();
+
+        return commandGateway.send(command).thenApply(result -> null);
+    }
+
     private void validateResumeFile(MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || originalFilename.isBlank()) {

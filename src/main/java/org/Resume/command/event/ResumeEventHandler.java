@@ -2,6 +2,8 @@ package org.Resume.command.event;
 
 import org.Resume.command.data.Resume;
 import org.Resume.command.data.ResumeRepository;
+import org.Resume.command.data.ResumeSkill;
+import org.Resume.command.data.ResumeSkillRepository;
 import org.Resume.constant.ResumeStatus;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,9 @@ public class ResumeEventHandler {
 
     @Autowired
     private ResumeRepository resumeRepository;
+
+    @Autowired
+    private ResumeSkillRepository resumeSkillRepository;
 
     @EventHandler
     public void on(ResumeCreatedEvent event) {
@@ -84,5 +89,32 @@ public class ResumeEventHandler {
                 }
             }
         });
+    }
+
+    @EventHandler
+    public void on(ResumeSkillAddedEvent event) {
+        resumeRepository.findById(event.getResumeId()).ifPresent(resume -> {
+            ResumeSkill skill = ResumeSkill.builder()
+                    .id(event.getSkillId())
+                    .resume(resume)
+                    .skillName(event.getSkillName())
+                    .level(event.getLevel())
+                    .build();
+            resumeSkillRepository.save(skill);
+        });
+    }
+
+    @EventHandler
+    public void on(ResumeSkillUpdatedEvent event) {
+        resumeSkillRepository.findById(event.getSkillId()).ifPresent(skill -> {
+            skill.setSkillName(event.getSkillName());
+            skill.setLevel(event.getLevel());
+            resumeSkillRepository.save(skill);
+        });
+    }
+
+    @EventHandler
+    public void on(ResumeSkillDeletedEvent event) {
+        resumeSkillRepository.deleteById(event.getSkillId());
     }
 }

@@ -7,4 +7,7 @@ public interface ResumeService {
     CompletableFuture<String> createResume(String candidateId, MultipartFile file, Boolean isDefault);
     CompletableFuture<Void> setDefaultResume(String candidateId, String resumeId);
     CompletableFuture<Void> deleteResume(String candidateId, String resumeId);
+    CompletableFuture<String> addSkill(String candidateId, String resumeId, String skillName, String level);
+    CompletableFuture<Void> updateSkill(String candidateId, String resumeId, String skillId, String skillName, String level);
+    CompletableFuture<Void> deleteSkill(String candidateId, String resumeId, String skillId);
 }
