@@ -19,6 +19,8 @@ import org.Resume.query.model.response.ResumeEducationResponse;
 import org.Resume.query.model.response.ResumeExperienceResponse;
 import org.Resume.query.model.response.ResumeProjectResponse;
 import org.Resume.query.model.response.ResumeIndexDataResponse;
+import org.Resume.query.model.response.PageResponse;
+import org.Resume.query.model.response.ResumePageResponse;
 import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -94,6 +96,25 @@ public class ResumeQueryHandler {
                 .build();
     }
 
+
+    @QueryHandler
+    @Transactional(readOnly = true)
+    public ResumePageResponse handle(GetResumesQuery query) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(query.getPage(), query.getSize());
+        org.springframework.data.domain.Page<Resume> resumesPage = resumeRepository.findAllByStatusNot(ResumeStatus.DELETED, pageable);
+
+        List<ResumeResponse> content = resumesPage.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        return new ResumePageResponse(
+                content,
+                resumesPage.getNumber(),
+                resumesPage.getSize(),
+                resumesPage.getTotalElements(),
+                resumesPage.getTotalPages()
+        );
+    }
 
     @QueryHandler
     @Transactional(readOnly = true)
