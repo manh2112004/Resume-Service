@@ -128,6 +128,15 @@ public class ResumeQueryHandler {
 
     @QueryHandler
     @Transactional(readOnly = true)
+    public ResumeResponse handle(GetDefaultResumeQuery query) {
+        Resume resume = resumeRepository.findByCandidateIdAndIsDefaultTrueAndStatusNot(query.getCandidateId(), ResumeStatus.DELETED)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Không tìm thấy CV mặc định"));
+        return mapToResponse(resume);
+    }
+
+    @QueryHandler
+    @Transactional(readOnly = true)
     public ResumeResponse handle(GetResumeByIdQuery query) {
         Resume resume = resumeRepository.findById(query.getResumeId())
                 .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(

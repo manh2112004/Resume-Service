@@ -3,6 +3,7 @@ package org.Resume.query.controller;
 import org.Resume.query.model.response.ResumeResponse;
 import org.Resume.query.queries.GetMyResumesQuery;
 import org.Resume.query.queries.GetResumeByIdQuery;
+import org.Resume.query.queries.GetDefaultResumeQuery;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,14 @@ public class ResumeQueryController {
         return queryGateway.query(
                 new GetMyResumesQuery(jwt.getSubject()),
                 ResponseTypes.multipleInstancesOf(ResumeResponse.class)
+        );
+    }
+
+    @GetMapping("/me/default")
+    public CompletableFuture<ResumeResponse> getMyDefaultResume(@AuthenticationPrincipal Jwt jwt) {
+        return queryGateway.query(
+                new GetDefaultResumeQuery(jwt.getSubject()),
+                ResponseTypes.instanceOf(ResumeResponse.class)
         );
     }
 

@@ -651,6 +651,11 @@ public class ResumeServiceImpl implements ResumeService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa CV này");
         }
 
+        return executeParsingLogic(resume);
+    }
+
+    private CompletableFuture<Void> executeParsingLogic(Resume resume) {
+        String resumeId = resume.getId();
         return CompletableFuture.runAsync(() -> {
             try {
                 // 1. Download file bytes
@@ -713,7 +718,7 @@ public class ResumeServiceImpl implements ResumeService {
                         "Resume text:\n" +
                         rawText;
 
-                String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + geminiApiKey;
+                String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + geminiApiKey;
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);

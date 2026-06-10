@@ -14,5 +14,6 @@ public interface ResumeRepository extends JpaRepository<Resume, String> {
     boolean existsByCandidateId(String candidateId);
     long countByCandidateId(String candidateId);
     Page<Resume> findAllByStatusNot(ResumeStatus status, Pageable pageable);
+    java.util.Optional<Resume> findByCandidateIdAndIsDefaultTrueAndStatusNot(String candidateId, ResumeStatus status);
 }
 
