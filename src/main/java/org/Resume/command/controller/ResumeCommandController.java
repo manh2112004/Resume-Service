@@ -155,6 +155,14 @@ public class ResumeCommandController {
         return resumeService.deleteProject(jwt.getSubject(), resumeId, projectId);
     }
 
+    @PostMapping("/{resumeId}/parse")
+    public CompletableFuture<Void> parseResume(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String resumeId
+    ) {
+        return resumeService.parseResume(jwt.getSubject(), resumeId);
+    }
+
     @lombok.Data
     public static class SkillRequest {
         private String skillName;

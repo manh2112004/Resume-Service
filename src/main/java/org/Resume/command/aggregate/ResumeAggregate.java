@@ -22,6 +22,9 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 
+import org.Resume.command.command.ParseResumeCommand;
+import org.Resume.command.event.ResumeParsedEvent;
+
 @Aggregate
 public class ResumeAggregate {
 
@@ -30,6 +33,20 @@ public class ResumeAggregate {
 
     public ResumeAggregate() {
         // Required by Axon
+    }
+
+    @CommandHandler
+    public void handle(ParseResumeCommand command) {
+        AggregateLifecycle.apply(ResumeParsedEvent.builder()
+                .id(command.getId())
+                .fullName(command.getFullName())
+                .email(command.getEmail())
+                .phone(command.getPhone())
+                .address(command.getAddress())
+                .summary(command.getSummary())
+                .totalExperienceYears(command.getTotalExperienceYears())
+                .rawText(command.getRawText())
+                .build());
     }
 
     @CommandHandler
@@ -247,6 +264,11 @@ public class ResumeAggregate {
 
     @EventSourcingHandler
     public void on(ResumeProjectDeletedEvent event) {
+        // No-op
+    }
+
+    @EventSourcingHandler
+    public void on(ResumeParsedEvent event) {
         // No-op
     }
 }

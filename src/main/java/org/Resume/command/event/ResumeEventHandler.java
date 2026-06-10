@@ -11,6 +11,8 @@ import org.Resume.command.data.ResumeExperienceRepository;
 import org.Resume.command.data.ResumeProject;
 import org.Resume.command.data.ResumeProjectRepository;
 import org.Resume.constant.ResumeStatus;
+import org.Resume.command.data.ResumeParsedData;
+import org.Resume.command.data.ResumeParsedDataRepository;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,6 +37,9 @@ public class ResumeEventHandler {
 
     @Autowired
     private ResumeProjectRepository resumeProjectRepository;
+
+    @Autowired
+    private ResumeParsedDataRepository resumeParsedDataRepository;
 
     @EventHandler
     public void on(ResumeCreatedEvent event) {
@@ -234,5 +239,29 @@ public class ResumeEventHandler {
     @EventHandler
     public void on(ResumeProjectDeletedEvent event) {
         resumeProjectRepository.deleteById(event.getProjectId());
+    }
+
+    @EventHandler
+    public void on(ResumeParsedEvent event) {
+        resumeRepository.findById(event.getId()).ifPresent(resume -> {
+            ResumeParsedData parsedData = resumeParsedDataRepository.findByResumeId(event.getId())
+                    .orElse(new ResumeParsedData());
+            
+            if (parsedData.getId() == null) {
+                parsedData.setId(java.util.UUID.randomUUID().toString());
+                parsedData.setResume(resume);
+            }
+            
+            parsedData.setFullName(event.getFullName());
+            parsedData.setEmail(event.getEmail());
+            parsedData.setPhone(event.getPhone());
+            parsedData.setAddress(event.getAddress());
+            parsedData.setSummary(event.getSummary());
+            parsedData.setTotalExperienceYears(event.getTotalExperienceYears());
+            parsedData.setRawText(event.getRawText());
+            parsedData.setParsedAt(LocalDateTime.now());
+            
+            resumeParsedDataRepository.save(parsedData);
+        });
     }
 }

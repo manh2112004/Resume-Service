@@ -23,4 +23,6 @@ public interface ResumeService {
     CompletableFuture<String> addProject(String candidateId, String resumeId, String projectName, String role, String description, String technologies, String projectUrl);
     CompletableFuture<Void> updateProject(String candidateId, String resumeId, String projectId, String projectName, String role, String description, String technologies, String projectUrl);
     CompletableFuture<Void> deleteProject(String candidateId, String resumeId, String projectId);
+
+    CompletableFuture<Void> parseResume(String candidateId, String resumeId);
 }

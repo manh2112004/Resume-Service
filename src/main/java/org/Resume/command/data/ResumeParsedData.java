@@ -27,6 +27,7 @@ public class ResumeParsedData {
 
     private String address;
 
+    @Column(columnDefinition = "TEXT")
     private String summary;
 
     private Integer totalExperienceYears;
