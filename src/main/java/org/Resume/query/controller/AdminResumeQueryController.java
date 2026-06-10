@@ -5,6 +5,8 @@ import org.Resume.query.model.response.ResumePageResponse;
 import org.Resume.query.model.response.ResumeResponse;
 import org.Resume.query.queries.GetResumeByIdQuery;
 import org.Resume.query.queries.GetResumesQuery;
+import org.Resume.query.queries.GetResumeStatisticsQuery;
+import org.Resume.query.model.response.ResumeStatisticsResponse;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,24 @@ public class AdminResumeQueryController {
 
     @Autowired
     private QueryGateway queryGateway;
+
+    @GetMapping("/statistics")
+    public CompletableFuture<ResumeStatisticsResponse> getResumeStatistics(
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        if (jwt == null || jwt.getSubject() == null || jwt.getSubject().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Không xác định được user từ token");
+        }
+
+        if (!hasAdminRole(jwt)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập thông tin này");
+        }
+
+        return queryGateway.query(
+                new GetResumeStatisticsQuery(),
+                ResponseTypes.instanceOf(ResumeStatisticsResponse.class)
+        );
+    }
 
     @GetMapping
     public CompletableFuture<ResumePageResponse> getResumes(

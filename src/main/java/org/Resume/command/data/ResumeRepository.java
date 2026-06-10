@@ -15,5 +15,11 @@ public interface ResumeRepository extends JpaRepository<Resume, String> {
     long countByCandidateId(String candidateId);
     Page<Resume> findAllByStatusNot(ResumeStatus status, Pageable pageable);
     java.util.Optional<Resume> findByCandidateIdAndIsDefaultTrueAndStatusNot(String candidateId, ResumeStatus status);
+
+    long countByStatusNot(ResumeStatus status);
+    long countByIsDefaultTrueAndStatusNot(ResumeStatus status);
+
+    @org.springframework.data.jpa.repository.Query("SELECT r.fileType, COUNT(r) FROM Resume r WHERE r.status <> :status GROUP BY r.fileType")
+    List<Object[]> countByFileTypeGrouped(@org.springframework.data.repository.query.Param("status") ResumeStatus status);
 }
 

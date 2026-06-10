@@ -21,6 +21,7 @@ import org.Resume.query.model.response.ResumeProjectResponse;
 import org.Resume.query.model.response.ResumeIndexDataResponse;
 import org.Resume.query.model.response.PageResponse;
 import org.Resume.query.model.response.ResumePageResponse;
+import org.Resume.query.model.response.*;
 import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -93,6 +94,31 @@ public class ResumeQueryHandler {
                 .experience(experience)
                 .projects(projects)
                 .rawText(rawText)
+                .build();
+    }
+
+    @QueryHandler
+    @Transactional(readOnly = true)
+    public ResumeStatisticsResponse handle(GetResumeStatisticsQuery query) {
+        long totalResumes = resumeRepository.countByStatusNot(ResumeStatus.DELETED);
+        long defaultResumes = resumeRepository.countByIsDefaultTrueAndStatusNot(ResumeStatus.DELETED);
+
+        List<Object[]> typeGrouped = resumeRepository.countByFileTypeGrouped(ResumeStatus.DELETED);
+        java.util.Map<String, Long> resumesByType = new java.util.HashMap<>();
+        if (typeGrouped != null) {
+            for (Object[] result : typeGrouped) {
+                String type = (String) result[0];
+                Long count = (Long) result[1];
+                if (type != null) {
+                    resumesByType.put(type.toLowerCase(), count);
+                }
+            }
+        }
+
+        return ResumeStatisticsResponse.builder()
+                .totalResumes(totalResumes)
+                .defaultResumes(defaultResumes)
+                .resumesByType(resumesByType)
                 .build();
     }
 
